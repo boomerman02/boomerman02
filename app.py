@@ -1,4 +1,3 @@
-
 import streamlit as st
 import gpxpy
 import folium
@@ -58,7 +57,7 @@ if gpx_file is not None:
                 folium.TileLayer(selected_tile).add_to(mapa)
 
             folium.PolyLine(coords, color="red", weight=4).add_to(mapa)
-            folium.Marker(coords[0], tooltip="Inicio").add_to(mapa)
+            folium.Marker(coords, tooltip="Inicio").add_to(mapa)
             folium.Marker(coords[-1], tooltip="Fin").add_to(mapa)
 
             st.subheader("Vista de la ruta")
@@ -67,27 +66,33 @@ if gpx_file is not None:
         elif modo == "Ver animación":
             st.write("Simulación de movimiento sobre la ruta (experimental).")
 
-            for i in range(0, len(coords), max(1, len(coords)//30)):
-                mapa = folium.Map(location=coords[i], zoom_start=13)
-                selected_tile = map_options[tipo_mapa]
+            # Crear un mapa centrado en el punto de inicio
+            mapa = folium.Map(location=coords, zoom_start=13)
+            selected_tile = map_options[tipo_mapa]
 
-                if selected_tile == "Google":
-                    if not google_api_key:
-                        st.error("Introduce tu API Key de Google Maps para usar este mapa.")
-                        break
-                    else:
-                        folium.TileLayer(
-                            tiles=f"https://mt1.google.com/vt/lyrs=r&x={{x}}&y={{y}}&z={{z}}&key={google_api_key}",
-                            attr="Google",
-                            name="Google Maps",
-                            overlay=False,
-                            control=True
-                        ).add_to(mapa)
+            if selected_tile == "Google":
+                if not google_api_key:
+                    st.error("Introduce tu API Key de Google Maps para usar este mapa.")
                 else:
-                    folium.TileLayer(selected_tile).add_to(mapa)
+                    folium.TileLayer(
+                        tiles=f"https://mt1.google.com/vt/lyrs=r&x={{x}}&y={{y}}&z={{z}}&key={google_api_key}",
+                        attr="Google",
+                        name="Google Maps",
+                        overlay=False,
+                        control=True
+                    ).add_to(mapa)
+            else:
+                folium.TileLayer(selected_tile).add_to(mapa)
 
-                folium.PolyLine(coords, color="red", weight=4).add_to(mapa)
-                folium.CircleMarker(location=coords[i], radius=8, color="blue", fill=True).add_to(mapa)
+            folium.PolyLine(coords, color="red", weight=4).add_to(mapa)
+            marker = folium.CircleMarker(location=coords, radius=8, color="blue", fill=True)
+            marker.add_to(mapa)
 
-                st_folium(mapa, width=700, height=500)
+            # Mostrar el mapa inicial
+            map_placeholder = st_folium(mapa, width=700, height=500)
+
+            # Actualizar la posición del marcador para simular el movimiento
+            for i in range(1, len(coords)):
+                marker.location = coords[i]
+                map_placeholder = st_folium(mapa, width=700, height=500)
                 time.sleep(0.2)
