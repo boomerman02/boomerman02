@@ -7,7 +7,7 @@ import numpy as np
 from PIL import ImageGrab
 import time
 
-st.title("Visualizador de rutas GPX con mapas y animación - 2")
+st.title("Visualizador de rutas GPX con mapas y animación - 22")
 
 # Modo de visualización
 modo = st.radio("Selecciona el modo de visualización", ["Ver ruta estática", "Ver animación", "Generar video"])
