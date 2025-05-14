@@ -36,7 +36,8 @@ if gpx_file is not None:
                 coords.append((point.latitude, point.longitude))
 
     if coords:
-        center = coords[len(coords)//2]
+        # Calcular el centro de las coordenadas
+        center = [sum(x) / len(x) for x in zip(*coords)]
 
         if modo == "Ver ruta estática":
             mapa = folium.Map(location=center, zoom_start=13)
