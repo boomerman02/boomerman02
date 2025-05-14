@@ -2,12 +2,15 @@ import streamlit as st
 import gpxpy
 import folium
 from streamlit_folium import st_folium
+import cv2
+import numpy as np
+from PIL import ImageGrab
 import time
 
 st.title("Visualizador de rutas GPX con mapas y animación - 1")
 
 # Modo de visualización
-modo = st.radio("Selecciona el modo de visualización", ["Ver ruta estática", "Ver animación"])
+modo = st.radio("Selecciona el modo de visualización", ["Ver ruta estática", "Ver animación", "Generar video"])
 
 # Selector de tipo de mapa
 map_options = {
@@ -25,6 +28,47 @@ google_api_key = st.text_input("Introduce tu Google Maps API Key (si elegiste Go
 
 # Subida de archivo GPX
 gpx_file = st.file_uploader("Sube tu archivo GPX", type=["gpx"])
+
+def create_video_from_gpx(gpx_file, output_file, map_type="OpenStreetMap"):
+    # Parse the GPX file
+    with open(gpx_file, 'r') as f:
+        gpx = gpxpy.parse(f)
+
+    # Extract latitude and longitude points from the GPX file
+    coords = []
+    for track in gpx.tracks:
+        for segment in track.segments:
+            for point in segment.points:
+                coords.append((point.latitude, point.longitude))
+
+    if not coords:
+        raise ValueError("No coordinates found in the GPX file.")
+
+    # Calculate the center of the coordinates
+    center = [sum(x) / len(x) for x in zip(*coords)]
+
+    # Create a video writer object
+    video_writer = cv2.VideoWriter(output_file, cv2.VideoWriter_fourcc(*"mp4v"), 1, (800, 600))
+
+    # Add frames to the video
+    for i in range(len(coords)):
+        mapa = folium.Map(location=coords[i], zoom_start=13)
+        folium.TileLayer(map_type).add_to(mapa)
+        folium.PolyLine(coords[:i+1], color="red", weight=4).add_to(mapa)
+        marker = folium.CircleMarker(location=coords[i], radius=8, color="blue", fill=True)
+        marker.add_to(mapa)
+
+        mapa.save("map.html")
+        
+        # Capture the screen image of the map
+        img = ImageGrab.grab(bbox=(0, 0, 800, 600))
+        frame = np.array(img)
+        frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+        
+        video_writer.write(frame)
+
+    # Release the video writer object
+    video_writer.release()
 
 if gpx_file is not None:
     gpx = gpxpy.parse(gpx_file)
@@ -98,3 +142,9 @@ if gpx_file is not None:
                 marker.location = coords[i]
                 map_placeholder.write(st_folium(mapa, width=700, height=500))
                 time.sleep(0.2)
+
+        elif modo == "Generar video":
+            st.write("Generando video de la ruta (experimental).")
+            output_file = "output_video.mp4"
+            create_video_from_gpx(gpx_file.name, output_file, map_options[tipo_mapa])
+            st.video(output_file)
