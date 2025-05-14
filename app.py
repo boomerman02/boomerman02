@@ -58,8 +58,8 @@ if gpx_file is not None:
                 folium.TileLayer(selected_tile).add_to(mapa)
 
             folium.PolyLine(coords, color="red", weight=4).add_to(mapa)
-            folium.Marker(coords, tooltip="Inicio").add_to(mapa)
-            folium.Marker(coords[-1], tooltip="Fin").add_to(mapa)
+            folium.Marker(location=coords, tooltip="Inicio").add_to(mapa)
+            folium.Marker(location=coords[-1], tooltip="Fin").add_to(mapa)
 
             st.subheader("Vista de la ruta")
             st_folium(mapa, width=700, height=500)
@@ -95,21 +95,6 @@ if gpx_file is not None:
 
             # Actualizar la posición del marcador para simular el movimiento
             for i in range(1, len(coords)):
-                mapa = folium.Map(location=coords[i], zoom_start=13)
-                if selected_tile == "Google":
-                    folium.TileLayer(
-                        tiles=f"https://mt1.google.com/vt/lyrs=r&x={{x}}&y={{y}}&z={{z}}&key={google_api_key}",
-                        attr="Google",
-                        name="Google Maps",
-                        overlay=False,
-                        control=True
-                    ).add_to(mapa)
-                else:
-                    folium.TileLayer(selected_tile).add_to(mapa)
-
-                folium.PolyLine(coords, color="red", weight=4).add_to(mapa)
-                marker = folium.CircleMarker(location=coords[i], radius=8, color="blue", fill=True)
-                marker.add_to(mapa)
-
+                marker.location = coords[i]
                 map_placeholder.write(st_folium(mapa, width=700, height=500))
                 time.sleep(0.2)
