@@ -4,7 +4,7 @@ import folium
 from streamlit_folium import st_folium
 import time
 
-st.title("Visualizador de rutas GPX con mapas y animación")
+st.title("Visualizador de rutas GPX con mapas y animación - 1")
 
 # Modo de visualización
 modo = st.radio("Selecciona el modo de visualización", ["Ver ruta estática", "Ver animación"])
