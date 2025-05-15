@@ -1,0 +1,8 @@
+
+streamlit
+gpxpy
+folium
+streamlit-folium
+opencv-python-headless
+numpy
+pillow
