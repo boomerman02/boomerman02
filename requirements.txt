@@ -1,8 +1,0 @@
-
-streamlit
-gpxpy
-folium
-streamlit-folium
-opencv-python
-numpy
-pillow
